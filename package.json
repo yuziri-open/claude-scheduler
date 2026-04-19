@@ -1,0 +1,36 @@
+{
+  "name": "claude-scheduler",
+  "version": "0.1.0",
+  "description": "Persistent local cron scheduler for Claude Code — no 7-day expiry",
+  "type": "module",
+  "bin": {
+    "claude-scheduler": "./bin/claude-scheduler.js"
+  },
+  "dependencies": {
+    "node-cron": "^3.0.0",
+    "commander": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "cron",
+    "scheduler",
+    "automation",
+    "persistent",
+    "daemon",
+    "mcp"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iorifuseya/claude-scheduler"
+  },
+  "homepage": "https://github.com/iorifuseya/claude-scheduler#readme",
+  "bugs": {
+    "url": "https://github.com/iorifuseya/claude-scheduler/issues"
+  },
+  "author": "Iori Fuseya"
+}
