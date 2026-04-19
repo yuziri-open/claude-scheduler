@@ -27,7 +27,7 @@ Claude Code's built-in `CronCreate` tool expires after 7 days and only survives 
 ### Option A: Clone and link globally
 
 ```bash
-git clone https://github.com/iorifuseya/claude-scheduler.git
+git clone https://github.com/yuziri-open/claude-scheduler.git
 cd claude-scheduler
 npm install
 npm link
@@ -36,7 +36,7 @@ npm link
 ### Option B: Use directly without installing
 
 ```bash
-git clone https://github.com/iorifuseya/claude-scheduler.git
+git clone https://github.com/yuziri-open/claude-scheduler.git
 cd claude-scheduler
 npm install
 node bin/claude-scheduler.js --help
@@ -226,6 +226,6 @@ The watchdog respects these environment variables if you need to override defaul
 
 ## License
 
-MIT License — Copyright (c) 2026 Iori Fuseya
+MIT License — Copyright (c) 2026 yuziri-open contributors
 
 See [LICENSE](LICENSE) for full text.

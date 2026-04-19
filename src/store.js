@@ -1,13 +1,4 @@
-/**
- * store.js
- * scheduled-tasks.json の読み書きモジュール
- *
- * 目的: ジョブ定義を ~/.claude-scheduler/scheduled-tasks.json に永続保存する
- * 冪等性: 同一名のジョブを2回追加しても壊れない（上書き確認あり）
- *
- * 作成日: 2026-04-10
- * 依頼元: Jack (COO) / Iori.corp
- */
+// Persistent store — reads and writes ~/.claude-scheduler/scheduled-tasks.json
 
 import fs from 'fs';
 import path from 'path';
@@ -17,14 +8,14 @@ const BASE_DIR = path.join(os.homedir(), '.claude-scheduler');
 const STORE_PATH = path.join(BASE_DIR, 'scheduled-tasks.json');
 
 /**
- * ストアの初期状態
+ * Default empty store structure.
  */
 const DEFAULT_STORE = {
   jobs: []
 };
 
 /**
- * ストアを初期化する（ディレクトリとファイルを作成）
+ * Ensure the store directory and file exist.
  */
 function ensureStore() {
   fs.mkdirSync(BASE_DIR, { recursive: true });
@@ -34,8 +25,8 @@ function ensureStore() {
 }
 
 /**
- * ストアを読み込む
- * @returns {{ jobs: Array }} ストアオブジェクト
+ * Read the store from disk.
+ * @returns {{ jobs: Array }}
  */
 export function readStore() {
   ensureStore();
@@ -43,14 +34,14 @@ export function readStore() {
     const raw = fs.readFileSync(STORE_PATH, 'utf8');
     return JSON.parse(raw);
   } catch (err) {
-    console.error(`[store] 読み込みエラー: ${err.message}`);
+    console.error(`[store] Read error: ${err.message}`);
     return { ...DEFAULT_STORE };
   }
 }
 
 /**
- * ストアを書き込む
- * @param {{ jobs: Array }} store - ストアオブジェクト
+ * Write the store to disk.
+ * @param {{ jobs: Array }} store
  */
 export function writeStore(store) {
   ensureStore();
@@ -58,21 +49,21 @@ export function writeStore(store) {
 }
 
 /**
- * ジョブを追加または更新する
- * @param {Object} job - ジョブ定義
- * @returns {{ created: boolean }} 新規作成かどうか
+ * Add or update a job (upsert by name).
+ * @param {Object} job - job definition
+ * @returns {{ created: boolean }}
  */
 export function upsertJob(job) {
   const store = readStore();
   const existingIndex = store.jobs.findIndex(j => j.name === job.name);
 
   if (existingIndex >= 0) {
-    // 既存ジョブを更新
+    // Update existing job
     store.jobs[existingIndex] = { ...store.jobs[existingIndex], ...job };
     writeStore(store);
     return { created: false };
   } else {
-    // 新規追加
+    // Add new job
     store.jobs.push(job);
     writeStore(store);
     return { created: true };
@@ -80,9 +71,9 @@ export function upsertJob(job) {
 }
 
 /**
- * ジョブを取得する
- * @param {string} name - ジョブ名
- * @returns {Object|null} ジョブ定義、見つからない場合はnull
+ * Get a job by name.
+ * @param {string} name
+ * @returns {Object|null}
  */
 export function getJob(name) {
   const store = readStore();
@@ -90,9 +81,9 @@ export function getJob(name) {
 }
 
 /**
- * ジョブを削除する
- * @param {string} name - ジョブ名
- * @returns {boolean} 削除できたかどうか
+ * Remove a job by name.
+ * @param {string} name
+ * @returns {boolean} true if a job was removed
  */
 export function removeJob(name) {
   const store = readStore();
@@ -103,8 +94,8 @@ export function removeJob(name) {
 }
 
 /**
- * 全ジョブを取得する
- * @returns {Array} ジョブ一覧
+ * Return all jobs.
+ * @returns {Array}
  */
 export function listJobs() {
   const store = readStore();
@@ -112,9 +103,9 @@ export function listJobs() {
 }
 
 /**
- * ジョブの実行結果を更新する
- * @param {string} name - ジョブ名
- * @param {boolean} success - 成功したか
+ * Update the last run result for a job.
+ * @param {string} name
+ * @param {boolean} success
  */
 export function updateJobResult(name, success) {
   const store = readStore();
@@ -128,7 +119,7 @@ export function updateJobResult(name, success) {
 }
 
 /**
- * ストアファイルのパスを返す（デバッグ用）
+ * Return the store file path (for display/debug).
  * @returns {string}
  */
 export function getStorePath() {

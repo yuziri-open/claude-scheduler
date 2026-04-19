@@ -26,11 +26,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/iorifuseya/claude-scheduler"
+    "url": "https://github.com/yuziri-open/claude-scheduler"
   },
-  "homepage": "https://github.com/iorifuseya/claude-scheduler#readme",
+  "homepage": "https://github.com/yuziri-open/claude-scheduler#readme",
   "bugs": {
-    "url": "https://github.com/iorifuseya/claude-scheduler/issues"
+    "url": "https://github.com/yuziri-open/claude-scheduler/issues"
   },
-  "author": "Iori Fuseya"
+  "author": "yuziri-open"
 }

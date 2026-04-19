@@ -1,33 +1,21 @@
-/**
- * scheduler.js
- * cronスケジューラー本体
- *
- * 目的: node-cronを使って登録されたジョブをスケジュール実行する
- * タイムゾーン: ローカルタイム（JST）で解釈（node-cronのデフォルト動作）
- * 制約:
- *   - エラーが起きても次のスケジュールまで待つ（クラッシュしない）
- *   - gracefulシャットダウン対応（SIGINT/SIGTERM）
- *
- * 作成日: 2026-04-10
- * 依頼元: Jack (COO) / Iori.corp
- */
+// Cron scheduler — loads jobs from store and runs them on schedule
 
 import cron from 'node-cron';
 import { listJobs } from './store.js';
 import { runJob } from './runner.js';
 import { systemLog } from './logger.js';
 
-// スケジュール済みタスクのマップ { jobName: cronTask }
+// Map of scheduled tasks: { jobName: cronTask }
 const scheduledTasks = new Map();
 
 /**
- * 全ジョブをスケジュールに登録する
+ * Register all enabled jobs with node-cron.
  */
 export function scheduleAllJobs() {
   const jobs = listJobs();
   const enabledJobs = jobs.filter(j => j.enabled !== false);
 
-  systemLog('INFO', `${enabledJobs.length}件のジョブをスケジュールに登録します`);
+  systemLog('INFO', `Scheduling ${enabledJobs.length} job(s)`);
 
   for (const job of enabledJobs) {
     scheduleJob(job);
@@ -35,50 +23,50 @@ export function scheduleAllJobs() {
 }
 
 /**
- * 単一ジョブをスケジュールに登録する
- * @param {Object} job - ジョブ定義
+ * Register a single job with node-cron.
+ * @param {Object} job - job definition
  */
 export function scheduleJob(job) {
-  // 既に登録済みなら停止してから再登録
+  // If already scheduled, stop and re-register
   if (scheduledTasks.has(job.name)) {
     scheduledTasks.get(job.name).stop();
     scheduledTasks.delete(job.name);
   }
 
   if (!cron.validate(job.cron)) {
-    systemLog('ERROR', `ジョブ "${job.name}" のcron式が無効です: "${job.cron}"`);
+    systemLog('ERROR', `Invalid cron expression for job "${job.name}": "${job.cron}"`);
     return;
   }
 
   const task = cron.schedule(job.cron, async () => {
-    systemLog('INFO', `ジョブ起動: "${job.name}"`);
+    systemLog('INFO', `Firing job: "${job.name}"`);
     try {
       await runJob(job);
     } catch (err) {
-      systemLog('ERROR', `ジョブ "${job.name}" で予期しないエラー: ${err.message}`);
+      systemLog('ERROR', `Unexpected error in job "${job.name}": ${err.message}`);
     }
   }, {
     scheduled: true,
-    // node-cronはデフォルトでローカルタイムを使う
+    // node-cron uses local time by default
   });
 
   scheduledTasks.set(job.name, task);
-  systemLog('INFO', `ジョブ登録完了: "${job.name}" (${job.cron})`);
+  systemLog('INFO', `Job registered: "${job.name}" (${job.cron})`);
 }
 
 /**
- * スケジューラーを停止する
+ * Stop all scheduled jobs.
  */
 export function stopAllJobs() {
   for (const [name, task] of scheduledTasks) {
     task.stop();
-    systemLog('INFO', `ジョブ停止: "${name}"`);
+    systemLog('INFO', `Job stopped: "${name}"`);
   }
   scheduledTasks.clear();
 }
 
 /**
- * 登録済みジョブ数を返す
+ * Return the number of registered scheduled jobs.
  * @returns {number}
  */
 export function getScheduledCount() {
@@ -86,11 +74,11 @@ export function getScheduledCount() {
 }
 
 /**
- * gracefulシャットダウンを設定する
+ * Set up graceful shutdown on SIGINT/SIGTERM.
  */
 export function setupGracefulShutdown() {
   const shutdown = (signal) => {
-    systemLog('INFO', `シグナル受信 (${signal})。シャットダウンします...`);
+    systemLog('INFO', `Signal received (${signal}). Shutting down...`);
     stopAllJobs();
     process.exit(0);
   };
